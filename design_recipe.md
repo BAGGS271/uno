@@ -73,16 +73,21 @@ class Deck:
     #   Import Random
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, is_computer):
     #   Assigns players name
-    #   self.hand = [] -> Empty player hand
+    #   self.player_hand = [] -> Empty player hand
+    #   self.is_computer = is_computer
 
-    def play_card(self):
+    def play_card(self, card):
     #   Takes user input to select a card from self.hand[]
     #   Removes that card from the hand and appends it to the cards in play
     #   Checks card is playable
+    #
+    #   if computer:
+    #       Get a list of playable cards
+    #       Select random playable card
 
-    def draw_card(self):
+    def draw_card(self, pick_up_deck):
     #   Takes a card from deck class
     #   Appends that card to hand
     #   Removes card from deck
@@ -93,10 +98,13 @@ class Player:
 class Game:
     def __init__(self):
     #   self.turn_order = [] -> cyle through list to get turns
+    #   self.in_play = []
+    #   self.pickup = []
+    #   self.winner = False
 
     def setup(self):
     #   Create two decks as lists - In play + Pickup
-    #   Create players and add to turn list
+    #   Create players and add to turn list - 1 Player 1 Computer
     #   Deal cards to players
     #   Display top card
 
@@ -112,9 +120,14 @@ class Game:
     #   Add card to bottom of deck
     #   Check win condition -> Empty hand []
 
+def draw(self):
+    #   if no playable cards in hand
+    #   draw_card(self.pick_up)
+
     def check_winner(self):
     #    If hand is empty list
     #    Print winner
+    #   self.winner = True
     #   Call end_game()
 
     def end_game(self):
@@ -125,42 +138,59 @@ class Game:
 
 ## 3. Create Examples as Integration Tests
 
-_Create examples of the classes being used together in different situations and
-combinations that reflect the ways in which the system will be used._
+""  When initilizing the deck
+    we can return the deck and see a list of all cards""
 
-```python
-# EXAMPLE
+deck = Deck()
+assert len(deck.deck) == 108
 
-"""
-Given a library
-When we add two tracks
-We see those tracks reflected in the tracks list
-"""
-library = MusicLibrary()
-track_1 = Track("Carte Blanche", "Veracocha")
-track_2 = Track("Synaesthesia", "The Thrillseekers")
-library.add(track_1)
-library.add(track_2)
-library.tracks # => [track_1, track_2]
-```
+"" When starting up the game
+    a player gets a hand containing seven cards ""
+
+deck = Deck()
+game = Game()
+game.setup()
+player = Player("Player_one")
+assert len(player.player_hand) == 7
+
+"" When drawing a card
+    that card is removed from the deck list
+    and added to player hand ""
+
+deck = Deck()
+player = Player("Player_one")
+player.draw_card()
+assert player.show_hand == ["one card"]
+
+"" When playing a card
+    that card is removed from the hand list 
+    and added to in_play list ""
+
+deck = Deck()
+player = Player("Player_one")
+player.draw_card()
+player.play_card()
+assert deck.in_play == ["one card]
+
+"" When a player reaches 0 cards in hand
+    the game ends"
+
+game = Game()
+game.setup()
+game.start()
+player.player_hand = []
+game.playround()
+assert game.winner == True
+
 
 ## 4. Create Examples as Unit Tests
 
-_Create examples, where appropriate, of the behaviour of each relevant class at
-a more granular level of detail._
+"" Creating a card ""
 
-```python
-# EXAMPLE
+card = Card("1", "Red")
+assert card.value == "1"
+assert card.colour == "Red"
 
-"""
-Given a track with a title and an artist
-We see the title reflected in the title property
-"""
-track = Track("Carte Blanche", "Veracocha")
-track.title # => "Carte Blanche"
-```
-
-_Encode each example as a test. You can add to the above list as you go._
 
 ## 5. Implement the Behaviour
 
