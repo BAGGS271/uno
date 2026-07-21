@@ -50,7 +50,7 @@ uses asciiflow.com but you could also use excalidraw.com, draw.io, or miro.com_
 ┌─────────────────────────┐
 │ game                    │
 │                         │
-│ - title                 │
+│                         │
 │ - start()               │
 │ - setup()               │
 │ - next turn()           │
@@ -58,48 +58,70 @@ uses asciiflow.com but you could also use excalidraw.com, draw.io, or miro.com_
 
 _Also design the interface of each class in more detail._
 
-```python
-class MusicLibrary:
+class Card:
     # User-facing properties:
-    #   tracks: list of instances of Track
+    #   Card colour, or wild card value
+    #   Card number 1 - 9 
 
+class Deck:
     def __init__(self):
-        pass # No code here yet
+    #   Creates a deck in the form of an empty list
+    #   Creates each card and appends to list
 
-    def add(self, track):
-        # Parameters:
-        #   track: an instance of Track
-        # Side-effects:
-        #   Adds the track to the tracks property of the self object
-        pass # No code here yet
+    def shuffle(self):
+    #   Puts cards in list in random order
+    #   Import Random
 
-    def search_by_title(self, keyword):
-        # Parameters:
-        #   keyword: string
-        # Returns:
-        #   A list of the Track objects that have titles that include the keyword
-        pass # No code here yet
+class Player:
+    def __init__(self, name):
+    #   Assigns players name
+    #   self.hand = [] -> Empty player hand
 
+    def play_card(self):
+    #   Takes user input to select a card from self.hand[]
+    #   Removes that card from the hand and appends it to the cards in play
+    #   Checks card is playable
 
-class Track:
-    # User-facing properties:
-    #   title: string
-    #   artist: string
+    def draw_card(self):
+    #   Takes a card from deck class
+    #   Appends that card to hand
+    #   Removes card from deck
 
-    def __init__(self, title, artist):
-        # Parameters:
-        #   title: string
-        #   artist: string
-        # Side-effects:
-        #   Sets the title and artist properties
-        pass # No code here yet
+    def show_hand(self):
+    #   Print hand list to terminal
 
-    def format(self):
-        # Returns:
-        #   A string of the form "TITLE by ARTIST"
-        pass # No code here yet
+class Game:
+    def __init__(self):
+    #   self.turn_order = [] -> cyle through list to get turns
 
-```
+    def setup(self):
+    #   Create two decks as lists - In play + Pickup
+    #   Create players and add to turn list
+    #   Deal cards to players
+    #   Display top card
+
+    def start(self):
+    #   Gets first player in turn order
+    #   Show player hand
+
+    def play_round(self):
+    #   Get turn player or computer
+    #   Player -> Call play_card func
+    #   Computer -> Get random playable card
+    #   Remove the card from players hand
+    #   Add card to bottom of deck
+    #   Check win condition -> Empty hand []
+
+    def check_winner(self):
+    #    If hand is empty list
+    #    Print winner
+    #   Call end_game()
+
+    def end_game(self):
+    #   Play again? user input = Y/N
+    #   Y = setup
+    #   N = exit()
+
 
 ## 3. Create Examples as Integration Tests
 
