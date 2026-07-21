@@ -2,7 +2,18 @@
 
 ## 1. Describe the Problem
 
-_Put or write the user story here. Add any clarifying notes you might have._
+Win Uno by being the first to empty your hand. Deal 7 cards to each player. 
+Flip the top card of the deck to start. Match the top discard card by color, number, or symbol. 
+Draw a card if you cannot play. 
+Yell "UNO!" with one card left.
+
+Special Action Cards:
+
+Skip: The next player misses their turn.
+Reverse: Play changes direction (clockwise to counter-clockwise).
+Draw 2: The next player draws 2 cards and skips their turn.
+Wild: Choose the next color to be played.
+Wild Draw 4: Choose the next color and force the next player to draw 4 cards. (You can only play this if you have no matching colored card).
 
 ## 2. Design the Class System
 
