@@ -21,27 +21,40 @@ _Consider diagramming out the classes and their relationships. Take care to
 focus on the details you see as important, not everything. The diagram below
 uses asciiflow.com but you could also use excalidraw.com, draw.io, or miro.com_
 
-```
 ┌────────────────────────────┐
-│ MusicPlayer                │
+│ Player                     │
 │                            │
-│ - tracks                   │
-│ - add(track)               │
-│ - search_by_title(keyword) │
-│   => [tracks...]           │
+│ - name                     │
+│ - hand []                  │
+│ - draw_card()              │
+│ - play_card()   
+│ - show_hand()
 └───────────┬────────────────┘
-            │
-            │ owns a list of
-            ▼
+      
 ┌─────────────────────────┐
-│ Track(title, artist)    │
+│ Card                    │
+│                         │
+│ - color                 │
+│ - value                 │
+│                         │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ Deck                    │
+│                         │
+│ - deck[]                │
+│ - draw()                │
+│ - shuffle()             │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ game                    │
 │                         │
 │ - title                 │
-│ - artist                │
-│ - format()              │
-│   => "TITLE by ARTIST"  │
+│ - start()               │
+│ - setup()               │
+│ - next turn()           │
 └─────────────────────────┘
-```
 
 _Also design the interface of each class in more detail._
 
