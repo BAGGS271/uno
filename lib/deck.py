@@ -1,8 +1,11 @@
 from lib.card import Card
+import random
 
 class Deck:
     def __init__(self):
         self.deck = []
+        self.fill_deck()
+        random.shuffle(self.deck)
 
     def fill_deck(self):
         colours = ["Red", "Yellow", "Green", "Blue"]
@@ -11,3 +14,8 @@ class Deck:
             for i in range(1, 10):
                 self.deck.append(Card(i, colour))
                 self.deck.append(Card(i, colour))
+
+    def draw(self):
+        if self.deck:
+            return self.deck.pop()
+        return None
