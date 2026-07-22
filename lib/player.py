@@ -13,5 +13,6 @@ class Player:
             self.player_hand.append(card)
 
     def play_card(self, deck):
-            card = self.player_hand.pop()
+            index = input("Which card you would like to play: ")
+            card = self.player_hand.pop(index)
             deck.append(card)
