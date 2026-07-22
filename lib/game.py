@@ -11,6 +11,15 @@ class Game:
         self.pickup = Deck()
         self.in_play = [self.pickup.draw()]
 
+    def playable_cards(self):
+        top_card = self.in_play[-1]
+        playable = []
+
+        for card in self.player.player_hand:
+            if card.colour == top_card.colour or card.value == top_card.value:
+                playable.append(card)
+        return playable
+
     def turn(self):
         self.show_top_card()
 
