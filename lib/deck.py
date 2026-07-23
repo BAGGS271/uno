@@ -16,6 +16,9 @@ class Deck:
                 self.deck.append(Card(i, colour))
                 self.deck.append(Card(i, colour))
 
+            for _ in range(2):
+                self.deck.append(Card("Draw Two", colour))
+
     def draw(self):
         if self.deck:
             return self.deck.pop()

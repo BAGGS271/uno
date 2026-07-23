@@ -49,19 +49,38 @@ class Game:
                 console.print("\nComputer is thinking...", style="italic yellow")
                 time.sleep(1)
 
-                player.computer_play_card(self.in_play, self.pickup)
-                self.render()
+                # store card by comp
+                played_card = player.computer_play_card(self.in_play, self.pickup)
 
             else:
-                player.no_playable_card(self.in_play, self.pickup)
-                self.render()
+                # store card played by human
+                played_card = player.no_playable_card(self.in_play, self.pickup)
 
-            player.turn = False
-            self.players[(i + 1) % len(self.players)].turn = True
+            next_player = self.players[(i + 1) % len(self.players)]
+
+            # check if card played was a draw 2
+            if played_card is not None and played_card.value == "Draw Two":
+
+                # make player pick up 2 cards
+                next_player.draw_card(self.pickup)
+                next_player.draw_card(self.pickup)
+
+                console.print(
+                    f"{next_player.name} picks up two cards and misses their turn!",
+                    style="bold yellow",
+                )
+                time.sleep(1.5)
+                player.turn = True
+                next_player.turn = False
+            else:
+                player.turn = False
+                next_player.turn = True
 
             if len(player.player_hand) == 1:
                 console.print("UNO!")
                 time.sleep(1.5)
+
+            self.render()
 
             break
 
@@ -73,7 +92,7 @@ class Game:
 
         return False
 
-    def setup(self, player_name):
+    def setup(self, player_name="Joe"):
         # using the name passed into setup() instead of terminal
         # allows you to be able to test setting up a game without waiting for someone to type.
         self.players.append(Player(player_name, False))
@@ -225,6 +244,10 @@ class Game:
 
         color = str(card.colour)
         value = str(card.value)
+
+        # display draw 2 cards as +2 as the text will be too long
+        if card.value == "Draw Two":
+            value = "+2"
 
         style = color_styles.get(color, "white")
 

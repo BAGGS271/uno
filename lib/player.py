@@ -4,6 +4,7 @@ import time
 
 console = Console()
 
+
 class Player:
 
     def __init__(self, name, is_computer):
@@ -23,10 +24,7 @@ class Player:
         while True:
             choice = IntPrompt.ask("Choose card number: ")
             if choice < 1 or choice > len(self.player_hand):
-                console.print(
-                    "That card does not exist!",
-                    style="bold red"
-                )
+                console.print("That card does not exist!", style="bold red")
                 continue
 
             card = self.player_hand[choice - 1]
@@ -34,37 +32,41 @@ class Player:
             if card in self.playable_cards(deck):
                 self.player_hand.pop(choice - 1)
                 deck.append(card)
-                break
+                # return the card so the game detects the draw two
+                return card
             else:
-                console.print(
-                    "You cannot play that card!",
-                    style="bold red"
-                )
+                console.print("You cannot play that card!", style="bold red")
 
     def no_playable_card(self, in_play_deck, pickup_deck):
         playable = self.playable_cards(in_play_deck)
         if playable == []:
             console.print(
-                "You have no playable cards, one has been drawn!",
-                    style="bold green"
+                "You have no playable cards, one has been drawn!", style="bold green"
             )
             time.sleep(1.5)
             self.draw_card(pickup_deck)
+
+            # no card played
+            return None
         else:
-            self.play_card(in_play_deck)
+            # pass selected card back to Game.turn()
+            return self.play_card(in_play_deck)
 
     def computer_play_card(self, in_play_deck, pickup_deck):
-         if len(self.playable_cards(in_play_deck)) == 0:
-              console.print(
+        if len(self.playable_cards(in_play_deck)) == 0:
+            console.print(
                 "Computer has no playable cards, one has been drawn!",
-                    style="bold green"
-              )
-              time.sleep(1.5)
-              self.draw_card(pickup_deck)
-         else:
+                style="bold green",
+            )
+            time.sleep(1.5)
+            self.draw_card(pickup_deck)
+            return None
+        else:
             card = self.playable_cards(in_play_deck)[0]
             self.player_hand.remove(card)
             in_play_deck.append(card)
+            # same as playcard, return the card so the game detects draw 2
+            return card
 
     def playable_cards(self, deck):
         top_card = deck[-1]

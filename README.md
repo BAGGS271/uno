@@ -1,0 +1,1 @@
+#each terminal session > export PYTHONPATH=lib and then run pytest
