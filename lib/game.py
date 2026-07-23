@@ -12,13 +12,14 @@ from rich.live import Live
 console = Console()
 
 class Game:
+    
     def __init__(self):
         self.players = []
         self.pickup = Deck()
         self.in_play = [self.pickup.draw()]
 
     def turn(self):
-        self.live.update(self.render_game())
+        self.render()
 
         for i, player in enumerate(self.players):
 
@@ -26,21 +27,18 @@ class Game:
                 continue
 
             if player.is_computer:
+                console.print("\nComputer is thinking...", style="italic yellow")
                 time.sleep(1)
+
                 player.computer_play_card(self.in_play, self.pickup)
+                self.render()
 
             else:
-                time.sleep(1)
-                self.live.stop()
                 player.play_card(self.in_play)
-                self.live.start()
-
-            self.live.update(self.render_game())
+                self.render()
 
             player.turn = False
-
-            next_player = self.players[(i + 1) % len(self.players)]
-            next_player.turn = True
+            self.players[(i + 1) % len(self.players)].turn = True
 
             break
 
@@ -49,6 +47,8 @@ class Game:
             if len(player.player_hand) == 0:
                 player.is_winner = True
                 return True
+
+        return False
 
     def setup(self):
 
@@ -73,21 +73,24 @@ class Game:
 
         self.deal()
 
-        with Live(
-        self.render_game(),
-        refresh_per_second=4
-        ) as live:
-            self.live = live
-
         while not self.check_winner():
             self.turn()
+
+        self.render()
+
+        winner = next(player for player in self.players if player.is_winner)
+        console.print(f"\n🏆 {winner.name} wins!", style="bold green")
 
     def deal(self):
         for player in self.players:
             for i in range(7):
                 player.draw_card(self.pickup)
 
-#VISUALS
+#######VISUALS#######
+
+    def render(self):
+        console.clear()
+        console.print(self.render_game())
 
     def choose_first(self):
 
