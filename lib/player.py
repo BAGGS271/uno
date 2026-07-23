@@ -22,6 +22,8 @@ class Player:
 
         while True:
             choice = IntPrompt.ask("Choose card number: ")
+            if choice == 0:
+                raise SystemExit
             if choice < 1 or choice > len(self.player_hand):
                 console.print(
                     "That card does not exist!",
@@ -54,14 +56,14 @@ class Player:
             self.play_card(in_play_deck)
 
     def computer_play_card(self, in_play_deck, pickup_deck):
-         if len(self.playable_cards(in_play_deck)) == 0:
-              console.print(
+        if len(self.playable_cards(in_play_deck)) == 0:
+            console.print(
                 "Computer has no playable cards, one has been drawn!",
                     style="bold green"
-              )
-              time.sleep(1.5)
-              self.draw_card(pickup_deck)
-         else:
+            )
+            time.sleep(1.5)
+            self.draw_card(pickup_deck)
+        else:
             card = self.playable_cards(in_play_deck)[0]
             self.player_hand.remove(card)
             in_play_deck.append(card)
