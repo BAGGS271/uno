@@ -4,4 +4,4 @@ class Card:
         self.colour = colour
 
     def __str__(self):
-        return f"{self.color} {self.value}"
+        return f"{self.colour} {self.value}"

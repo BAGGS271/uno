@@ -7,7 +7,6 @@ from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
-from rich.live import Live
 
 console = Console()
 
@@ -20,6 +19,11 @@ class Game:
 
     def turn(self):
         self.render()
+
+        if self.pickup == []:
+            self.pickup = self.in_play
+            console.print("Deck Flipped!")
+            time.sleep(1.5)
 
         for i, player in enumerate(self.players):
 
@@ -34,11 +38,15 @@ class Game:
                 self.render()
 
             else:
-                player.play_card(self.in_play)
+                player.no_playable_card(self.in_play, self.pickup)
                 self.render()
 
             player.turn = False
             self.players[(i + 1) % len(self.players)].turn = True
+
+            if len(player.player_hand) == 1:
+                console.print("UNO!")
+                time.sleep(1.5)
 
             break
 
@@ -52,14 +60,14 @@ class Game:
 
     def setup(self):
 
-        print("""
-            ██╗   ██╗███╗   ██╗ ██████╗
-            ██║   ██║████╗  ██║██╔═══██╗
-            ██║   ██║██╔██╗ ██║██║   ██║
-            ██║   ██║██║╚██╗██║██║   ██║
-            ╚██████╔╝██║ ╚████║╚██████╔╝
-            ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝
-        """)
+        console.print("""
+        [bold red]██╗   ██╗███╗   ██╗ ██████╗[/]
+        [bold yellow]██║   ██║████╗  ██║██╔═══██╗[/]
+        [bold green]██║   ██║██╔██╗ ██║██║   ██║[/]
+        [bold blue]██║   ██║██║╚██╗██║██║   ██║[/]
+        [bold red]╚██████╔╝██║ ╚████║╚██████╔╝[/]
+        [bold yellow]╚═════╝ ╚═╝  ╚═══╝ ╚═════╝[/]
+        """)
 
         time.sleep(1.5)
 
@@ -80,6 +88,16 @@ class Game:
 
         winner = next(player for player in self.players if player.is_winner)
         console.print(f"\n🏆 {winner.name} wins!", style="bold green")
+
+        while True:
+            play_again = console.input("Play Again? Y/N: ").upper()
+            if play_again == "Y":
+                game = Game()
+                game.setup()
+            elif play_again == "N":
+                exit()
+            else:
+                continue
 
     def deal(self):
         for player in self.players:
@@ -102,25 +120,25 @@ class Game:
             print("Choosing who goes first...\n")
 
             if i % 2 == 0:
-                print(f"[ {player1.name.upper()} ]      [ {player2.name} ]")
+                console.print(f"[bold green][ {player1.name.upper()} ][/]        " +      f"[bold red][ {player2.name} ][/]")
             else:
-                print(f"[ {player1.name} ]      [ {player2.name.upper()} ]")
+                console.print(f"[bold green][ {player1.name} ][/]        " +      f"[bold red][ {player2.name.upper()} ][/]")
 
             time.sleep(0.4)
             os.system("clear")
 
-        winner = player2
+        winner = random.choice(self.players)
 
         os.system("clear")
 
         print("Choosing who goes first...\n")
 
         if winner == player1:
-            print(f"[ {player1.name.upper()} ]      [ {player2.name} ]")
+            console.print(f"[bold green][ {player1.name.upper()} ][/]        " +      f"[bold red][ {player2.name} ][/]")
         else:
-            print(f"[ {player1.name} ]      [ {player2.name.upper()} ]")
+            console.print(f"[bold red][ {player1.name} ][/]        " +      f"[bold green][ {player2.name.upper()} ][/]")
 
-        print(f"\n{winner.name} goes first!")
+        console.print(f"\n[bold green]{winner.name} goes first![/]")
 
         time.sleep(2.5)
 
@@ -254,8 +272,8 @@ class Game:
         amount = self.pickup.__len__()
 
         count = Text(
-            f"\n{amount} cards\nremaining",
-            justify="center",
+            f"{amount} pick up cards\nremaining",
+            justify="left",
             style="bold white"
         )
 
@@ -271,15 +289,19 @@ class Game:
 
         pickup = self.pickup_pile()
 
+
+        amount_in_play = self.in_play.__len__()
+
         discard = Group(
             self.card_panel(
                 self.in_play[-1]
             ),
             Text(
-                "\nDiscard",
-                justify="center",
-                style="bold yellow"
+                f"There are {amount_in_play}\ncards in play",
+                justify="left",
+                style="bold white"
             )
+        
         )
 
         table.add_row(

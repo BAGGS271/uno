@@ -1,6 +1,6 @@
-import random
 from rich.prompt import IntPrompt
 from rich.console import Console
+import time
 
 console = Console()
 
@@ -19,6 +19,7 @@ class Player:
             self.player_hand.append(card)
 
     def play_card(self, deck):
+
         while True:
             choice = IntPrompt.ask("Choose card number: ")
             if choice < 1 or choice > len(self.player_hand):
@@ -34,15 +35,31 @@ class Player:
                 self.player_hand.pop(choice - 1)
                 deck.append(card)
                 break
-
             else:
                 console.print(
                     "You cannot play that card!",
                     style="bold red"
                 )
 
+    def no_playable_card(self, in_play_deck, pickup_deck):
+        playable = self.playable_cards(in_play_deck)
+        if playable == []:
+            console.print(
+                "You have no playable cards, one has been drawn!",
+                    style="bold green"
+            )
+            time.sleep(1.5)
+            self.draw_card(pickup_deck)
+        else:
+            self.play_card(in_play_deck)
+
     def computer_play_card(self, in_play_deck, pickup_deck):
          if len(self.playable_cards(in_play_deck)) == 0:
+              console.print(
+                "Computer has no playable cards, one has been drawn!",
+                    style="bold green"
+              )
+              time.sleep(1.5)
               self.draw_card(pickup_deck)
          else:
             card = self.playable_cards(in_play_deck)[0]
