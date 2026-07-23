@@ -267,9 +267,15 @@ class Game:
 
         row = []
 
-        for card in cards:
+        for card_number, card in enumerate(cards, start=1):
 
-            row.append(self.card_panel(card))
+            labelled_card = Group(
+                self.card_panel(card),
+                Text(f"Card {card_number}", justify="center", style="bold white"),
+            )
+
+            row.append(labelled_card)
+
             if len(row) == 6:
                 table.add_row(*row)
                 row = []
