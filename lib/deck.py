@@ -19,3 +19,6 @@ class Deck:
         if self.deck:
             return self.deck.pop()
         return None
+
+    def __len__(self):
+        return len(self.deck)

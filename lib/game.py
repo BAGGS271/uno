@@ -3,7 +3,13 @@ from player import Player
 import random
 import time
 import os
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+from rich.live import Live
 
+console = Console()
 
 class Game:
     def __init__(self):
@@ -11,34 +17,38 @@ class Game:
         self.pickup = Deck()
         self.in_play = [self.pickup.draw()]
 
-    def playable_cards(self):
-        top_card = self.in_play[-1]
-        playable = []
-
-        for card in self.player.player_hand:
-            if card.colour == top_card.colour or card.value == top_card.value:
-                playable.append(card)
-        return playable
-
     def turn(self):
-        self.show_top_card()
+        self.live.update(self.render_game())
 
-        for player in self.players:
-            if player.turn:
-                if player.is_computer is False:
-                    self.show_hand(player)
-                player.play_card(self.in_play)
-                player.turn = False
+        for i, player in enumerate(self.players):
+
+            if not player.turn:
+                continue
+
+            if player.is_computer:
+                time.sleep(1)
+                player.computer_play_card(self.in_play, self.pickup)
+
             else:
-                player.turn = True
+                time.sleep(1)
+                self.live.stop()
+                player.play_card(self.in_play)
+                self.live.start()
 
-        self.check_winner()
+            self.live.update(self.render_game())
+
+            player.turn = False
+
+            next_player = self.players[(i + 1) % len(self.players)]
+            next_player.turn = True
+
+            break
 
     def check_winner(self):
         for player in self.players:
             if len(player.player_hand) == 0:
                 player.is_winner = True
-                print (f"{player.name} wins!")
+                return True
 
     def setup(self):
 
@@ -51,20 +61,26 @@ class Game:
             ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝
         """)
 
-        time.sleep(2)
+        time.sleep(1.5)
 
         self.players.append(Player(input("Player 1 name: "),False))
         self.players.append(Player("Computer",True))
         print("Player 2 name: Computer \n")
-        print("[ Corban ] VS [ Computer ]")
 
-        time.sleep(2)
+        time.sleep(1.5)
 
         self.choose_first()
 
         self.deal()
 
-        self.turn()
+        with Live(
+        self.render_game(),
+        refresh_per_second=4
+        ) as live:
+            self.live = live
+
+        while not self.check_winner():
+            self.turn()
 
     def deal(self):
         for player in self.players:
@@ -72,7 +88,9 @@ class Game:
                 player.draw_card(self.pickup)
 
 #VISUALS
+
     def choose_first(self):
+
         player1 = self.players[0]
         player2 = self.players[1]
 
@@ -88,7 +106,7 @@ class Game:
             time.sleep(0.4)
             os.system("clear")
 
-        winner = random.choice(self.players)
+        winner = player2
 
         os.system("clear")
 
@@ -107,34 +125,9 @@ class Game:
 
         winner.turn = True
         return winner
+    
 
-    def show_hand(self, player):
 
-        cards = []
-
-        for card in player.player_hand:
-            cards.append([
-                "+---------+",
-                f"| {card.colour:<7} |",
-                "|         |",
-                f"| {card.value:^7} |",
-                "|         |",
-                f"| {card.colour:<7} |",
-                "+---------+"
-            ])
-
-        print("\nYour cards:\n")
-
-        for row in range(7):
-            for card in cards:
-                print(card[row], end="  ")
-            print()
-
-        for i in range(len(cards)):
-            print(f"    {i+1}       ", end="")
-        print()
-
-    def show_top_card(self):
         card = self.in_play[-1]
 
         print("Top card:\n")
@@ -147,3 +140,203 @@ class Game:
         print(f"| {card.colour:<7} |")
         print("+---------+")
 
+    def render_game(self):
+
+        computer_table = Table.grid()
+
+        hidden_cards = [
+            self.hidden_card()
+            for _ in self.players[1].player_hand
+        ]
+
+        row = []
+
+        for card in hidden_cards:
+            row.append(card)
+
+            if len(row) == 6:
+                computer_table.add_row(*row)
+                row = []
+
+        if row:
+            computer_table.add_row(*row)
+
+
+        board = Group(
+            Panel(
+                computer_table,
+                title="Computer Hand",
+                border_style="red"
+            ),
+
+            self.center_area(),
+
+            Panel(
+                self.draw_hand(
+                    self.players[0].player_hand
+                ),
+                title="Your Hand",
+                border_style="green"
+            )
+        )
+
+
+        return board
+
+    def card_panel(self, card):
+
+        color_styles = {
+            "Red": "red",
+            "Blue": "blue",
+            "Green": "green",
+            "Yellow": "yellow"
+        }
+
+        color = str(card.colour)
+        value = str(card.value)
+
+        style = color_styles.get(color, "white")
+
+        card_text = Text(
+            f"\n{value}\n",
+            justify="center",
+            style=f"bold {style}"
+        )
+
+        return Panel(
+            card_text,
+            width=8,
+            height=5,
+            border_style=style
+        )
+
+    def hidden_card(self):
+
+        return Panel(
+            Text(
+                "\n🂠\n",
+                justify="center"
+            ),
+            width=8,
+            height=5,
+            border_style="white"
+        )
+
+    def draw_hand(self, cards):
+
+        table = Table.grid()
+
+        row = []
+
+        for card in cards:
+
+            row.append(
+                self.card_panel(card)
+            )
+            if len(row) == 6:
+                table.add_row(*row)
+                row = []
+
+
+        if row:
+            table.add_row(*row)
+
+
+        return table
+
+    def pickup_pile(self):
+
+        pile = self.hidden_card()
+
+        amount = self.pickup.__len__()
+
+        count = Text(
+            f"\n{amount} cards\nremaining",
+            justify="center",
+            style="bold white"
+        )
+
+        return Group(
+            pile,
+            count
+        )
+
+    def center_area(self):
+        table = Table.grid(
+            expand=True
+        )
+
+        pickup = self.pickup_pile()
+
+        discard = Group(
+            self.card_panel(
+                self.in_play[-1]
+            ),
+            Text(
+                "\nDiscard",
+                justify="center",
+                style="bold yellow"
+            )
+        )
+
+        table.add_row(
+            pickup,
+            discard
+        )
+
+        return Panel(
+            table,
+            title="Table",
+            border_style="cyan"
+        )
+
+  
+        console.clear()
+
+        computer_table = Table.grid()
+
+
+        hidden_cards = [
+            self.hidden_card()
+            for _ in self.players[1].player_hand
+        ]
+
+
+        row = []
+
+
+        for card in hidden_cards:
+
+            row.append(card)
+
+            if len(row) == 6:
+                computer_table.add_row(*row)
+                row = []
+
+
+        if row:
+            computer_table.add_row(*row)
+
+
+
+        console.print(
+            Panel(
+                computer_table,
+                title="Computer Hand",
+                border_style="red"
+            )
+        )
+
+        console.print(
+            self.center_area()
+        )
+
+        console.print(
+            Panel(
+                self.draw_hand(
+                    self.players[0].player_hand
+                ),
+                title="Your Hand",
+                border_style="green"
+            )
+        )
