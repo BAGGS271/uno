@@ -1,0 +1,12 @@
+# Python build files
+build/
+dist/
+*.egg-info/
+
+# Compiled executables
+*.exe
+
+# Virtual environments
+venv/
+.venv/
+env/

@@ -59,11 +59,7 @@ class Game:
                 time.sleep(1.5)
                 player.turn = True
                 next_player.turn = False
-            else:
-                player.turn = False
-                next_player.turn = True
-
-            if played_card is not None and played_card.value == "Draw Four":
+            elif played_card is not None and played_card.value == "Draw Four":
 
                 # make player pick up 4 cards
                 next_player.draw_card(self.pickup)
@@ -78,11 +74,7 @@ class Game:
                 time.sleep(1.5)
                 player.turn = True
                 next_player.turn = False
-            else:
-                player.turn = False
-                next_player.turn = True
-
-            if played_card is not None and played_card.value == "Skip":
+            elif played_card is not None and played_card.value == "Skip":
                 console.print(
                     f"{next_player.name} misses a turn!",
                     style="bold yellow",
@@ -90,11 +82,7 @@ class Game:
                 time.sleep(1.5)
                 player.turn = True
                 next_player.turn = False
-            else:
-                player.turn = False
-                next_player.turn = True
-
-            if played_card is not None and played_card.value == "Reverse":
+            elif played_card is not None and played_card.value == "Reverse":
                 console.print(
                     f"Turn order reversed. {player.name}'s turn!",
                     style="bold yellow",
