@@ -10,12 +10,27 @@ from rich.text import Text
 
 console = Console()
 
+
 class Game:
-    
+
     def __init__(self):
         self.players = []
         self.pickup = Deck()
         self.in_play = [self.pickup.draw()]
+
+    # for tests to work, it was asking for name first when running the game
+    # so seperated this to put it before the name request
+    def show_logo(self):
+        console.print("""
+                [bold red]██╗   ██╗███╗   ██╗ ██████╗[/]
+                [bold yellow]██║   ██║████╗  ██║██╔═══██╗[/]
+                [bold green]██║   ██║██╔██╗ ██║██║   ██║[/]
+                [bold blue]██║   ██║██║╚██╗██║██║   ██║[/]
+                [bold red]╚██████╔╝██║ ╚████║╚██████╔╝[/]
+                [bold yellow]╚═════╝ ╚═╝  ╚═══╝ ╚═════╝[/]
+                """)
+
+        time.sleep(1.5)
 
     def turn(self):
         self.render()
@@ -34,19 +49,57 @@ class Game:
                 console.print("\nComputer is thinking...", style="italic yellow")
                 time.sleep(1)
 
-                player.computer_play_card(self.in_play, self.pickup)
-                self.render()
+                # store card by comp
+                played_card = player.computer_play_card(self.in_play, self.pickup)
 
             else:
-                player.no_playable_card(self.in_play, self.pickup)
-                self.render()
+                # store card played by human
+                played_card = player.no_playable_card(self.in_play, self.pickup)
 
-            player.turn = False
-            self.players[(i + 1) % len(self.players)].turn = True
+            next_player = self.players[(i + 1) % len(self.players)]
+
+            # check if card played was a draw 2
+            if played_card is not None and played_card.value == "Draw Two":
+
+                # make player pick up 2 cards
+                next_player.draw_card(self.pickup)
+                next_player.draw_card(self.pickup)
+
+                console.print(
+                    f"{next_player.name} picks up two cards and misses their turn!",
+                    style="bold yellow",
+                )
+                time.sleep(1.5)
+                player.turn = True
+                next_player.turn = False
+            else:
+                player.turn = False
+                next_player.turn = True
+
+            if played_card is not None and played_card.value == "Draw Four":
+
+                # make player pick up 4 cards
+                next_player.draw_card(self.pickup)
+                next_player.draw_card(self.pickup)
+                next_player.draw_card(self.pickup)
+                next_player.draw_card(self.pickup)
+
+                console.print(
+                    f"{next_player.name} picks up four cards and misses their turn!",
+                    style="bold yellow",
+                )
+                time.sleep(1.5)
+                player.turn = True
+                next_player.turn = False
+            else:
+                player.turn = False
+                next_player.turn = True
 
             if len(player.player_hand) == 1:
                 console.print("UNO!")
                 time.sleep(1.5)
+
+            self.render()
 
             break
 
@@ -58,21 +111,11 @@ class Game:
 
         return False
 
-    def setup(self):
-
-        console.print("""
-        [bold red]██╗   ██╗███╗   ██╗ ██████╗[/]
-        [bold yellow]██║   ██║████╗  ██║██╔═══██╗[/]
-        [bold green]██║   ██║██╔██╗ ██║██║   ██║[/]
-        [bold blue]██║   ██║██║╚██╗██║██║   ██║[/]
-        [bold red]╚██████╔╝██║ ╚████║╚██████╔╝[/]
-        [bold yellow]╚═════╝ ╚═╝  ╚═══╝ ╚═════╝[/]
-        """)
-
-        time.sleep(1.5)
-
-        self.players.append(Player(input("Player 1 name: "),False))
-        self.players.append(Player("Computer",True))
+    def setup(self, player_name="Joe"):
+        # using the name passed into setup() instead of terminal
+        # allows you to be able to test setting up a game without waiting for someone to type.
+        self.players.append(Player(player_name, False))
+        self.players.append(Player("Computer", True))
         print("Player 2 name: Computer \n")
 
         time.sleep(1.5)
@@ -81,21 +124,29 @@ class Game:
 
         self.deal()
 
+    def play(self):
         while not self.check_winner():
             self.turn()
 
         self.render()
 
         winner = next(player for player in self.players if player.is_winner)
+
         console.print(f"\n🏆 {winner.name} wins!", style="bold green")
 
         while True:
             play_again = console.input("Play Again? Y/N: ").upper()
+
             if play_again == "Y":
+                # Create a fresh game while keeping the same player's name.
                 game = Game()
-                game.setup()
+                game.setup(self.players[0].name)
+                game.play()
+                return
+
             elif play_again == "N":
-                exit()
+                return
+
             else:
                 continue
 
@@ -104,7 +155,7 @@ class Game:
             for i in range(7):
                 player.draw_card(self.pickup)
 
-#######VISUALS#######
+    #######VISUALS#######
 
     def render(self):
         console.clear()
@@ -120,9 +171,15 @@ class Game:
             print("Choosing who goes first...\n")
 
             if i % 2 == 0:
-                console.print(f"[bold green][ {player1.name.upper()} ][/]        " +      f"[bold red][ {player2.name} ][/]")
+                console.print(
+                    f"[bold green][ {player1.name.upper()} ][/]        "
+                    + f"[bold red][ {player2.name} ][/]"
+                )
             else:
-                console.print(f"[bold green][ {player1.name} ][/]        " +      f"[bold red][ {player2.name.upper()} ][/]")
+                console.print(
+                    f"[bold green][ {player1.name} ][/]        "
+                    + f"[bold red][ {player2.name.upper()} ][/]"
+                )
 
             time.sleep(0.4)
             os.system("clear")
@@ -134,9 +191,15 @@ class Game:
         print("Choosing who goes first...\n")
 
         if winner == player1:
-            console.print(f"[bold green][ {player1.name.upper()} ][/]        " +      f"[bold red][ {player2.name} ][/]")
+            console.print(
+                f"[bold green][ {player1.name.upper()} ][/]        "
+                + f"[bold red][ {player2.name} ][/]"
+            )
         else:
-            console.print(f"[bold red][ {player1.name} ][/]        " +      f"[bold green][ {player2.name.upper()} ][/]")
+            console.print(
+                f"[bold red][ {player1.name} ][/]        "
+                + f"[bold green][ {player2.name.upper()} ][/]"
+            )
 
         console.print(f"\n[bold green]{winner.name} goes first![/]")
 
@@ -146,8 +209,6 @@ class Game:
 
         winner.turn = True
         return winner
-    
-
 
         card = self.in_play[-1]
 
@@ -165,10 +226,7 @@ class Game:
 
         computer_table = Table.grid()
 
-        hidden_cards = [
-            self.hidden_card()
-            for _ in self.players[1].player_hand
-        ]
+        hidden_cards = [self.hidden_card() for _ in self.players[1].player_hand]
 
         row = []
 
@@ -182,25 +240,15 @@ class Game:
         if row:
             computer_table.add_row(*row)
 
-
         board = Group(
-            Panel(
-                computer_table,
-                title="Computer Hand",
-                border_style="red"
-            ),
-
+            Panel(computer_table, title="Computer Hand", border_style="red"),
             self.center_area(),
-
             Panel(
-                self.draw_hand(
-                    self.players[0].player_hand
-                ),
+                self.draw_hand(self.players[0].player_hand),
                 title="Your Hand",
-                border_style="green"
-            )
+                border_style="green",
+            ),
         )
-
 
         return board
 
@@ -210,37 +258,29 @@ class Game:
             "Red": "red",
             "Blue": "blue",
             "Green": "green",
-            "Yellow": "yellow"
+            "Yellow": "yellow",
         }
 
         color = str(card.colour)
         value = str(card.value)
 
+        # display draw 2 cards as +2 as the text will be too long
+        if card.value == "Draw Two":
+            value = "+2"
+
+        if card.value == "Draw Four":
+            value = "+4"
+
         style = color_styles.get(color, "white")
 
-        card_text = Text(
-            f"\n{value}\n",
-            justify="center",
-            style=f"bold {style}"
-        )
+        card_text = Text(f"\n{value}\n", justify="center", style=f"bold {style}")
 
-        return Panel(
-            card_text,
-            width=8,
-            height=5,
-            border_style=style
-        )
+        return Panel(card_text, width=8, height=5, border_style=style)
 
     def hidden_card(self):
 
         return Panel(
-            Text(
-                "\n🂠\n",
-                justify="center"
-            ),
-            width=8,
-            height=5,
-            border_style="white"
+            Text("\n🂠\n", justify="center"), width=8, height=5, border_style="white"
         )
 
     def draw_hand(self, cards):
@@ -249,19 +289,21 @@ class Game:
 
         row = []
 
-        for card in cards:
+        for card_number, card in enumerate(cards, start=1):
 
-            row.append(
-                self.card_panel(card)
+            labelled_card = Group(
+                self.card_panel(card),
+                Text(f"Card {card_number}", justify="center", style="bold white"),
             )
+
+            row.append(labelled_card)
+
             if len(row) == 6:
                 table.add_row(*row)
                 row = []
 
-
         if row:
             table.add_row(*row)
-
 
         return table
 
@@ -272,63 +314,38 @@ class Game:
         amount = self.pickup.__len__()
 
         count = Text(
-            f"{amount} pick up cards\nremaining",
-            justify="left",
-            style="bold white"
+            f"{amount} pick up cards\nremaining", justify="left", style="bold white"
         )
 
-        return Group(
-            pile,
-            count
-        )
+        return Group(pile, count)
 
     def center_area(self):
-        table = Table.grid(
-            expand=True
-        )
+        table = Table.grid(expand=True)
 
         pickup = self.pickup_pile()
-
 
         amount_in_play = self.in_play.__len__()
 
         discard = Group(
-            self.card_panel(
-                self.in_play[-1]
-            ),
+            self.card_panel(self.in_play[-1]),
             Text(
                 f"There are {amount_in_play}\ncards in play",
                 justify="left",
-                style="bold white"
-            )
-        
+                style="bold white",
+            ),
         )
 
-        table.add_row(
-            pickup,
-            discard
-        )
+        table.add_row(pickup, discard)
 
-        return Panel(
-            table,
-            title="Table",
-            border_style="cyan"
-        )
+        return Panel(table, title="Table", border_style="cyan")
 
-  
         console.clear()
 
         computer_table = Table.grid()
 
-
-        hidden_cards = [
-            self.hidden_card()
-            for _ in self.players[1].player_hand
-        ]
-
+        hidden_cards = [self.hidden_card() for _ in self.players[1].player_hand]
 
         row = []
-
 
         for card in hidden_cards:
 
@@ -338,30 +355,17 @@ class Game:
                 computer_table.add_row(*row)
                 row = []
 
-
         if row:
             computer_table.add_row(*row)
 
+        console.print(Panel(computer_table, title="Computer Hand", border_style="red"))
 
-
-        console.print(
-            Panel(
-                computer_table,
-                title="Computer Hand",
-                border_style="red"
-            )
-        )
-
-        console.print(
-            self.center_area()
-        )
+        console.print(self.center_area())
 
         console.print(
             Panel(
-                self.draw_hand(
-                    self.players[0].player_hand
-                ),
+                self.draw_hand(self.players[0].player_hand),
                 title="Your Hand",
-                border_style="green"
+                border_style="green",
             )
         )

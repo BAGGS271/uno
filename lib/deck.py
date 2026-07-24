@@ -1,6 +1,7 @@
 from card import Card
 import random
 
+
 class Deck:
     def __init__(self):
         self.deck = []
@@ -14,6 +15,13 @@ class Deck:
             for i in range(1, 10):
                 self.deck.append(Card(i, colour))
                 self.deck.append(Card(i, colour))
+
+            for _ in range(2):
+                self.deck.append(Card("Draw Two", colour))
+
+            for i in range(1):
+                self.deck.append(Card("Draw Four", "Black"))
+
 
     def draw(self):
         if self.deck:
