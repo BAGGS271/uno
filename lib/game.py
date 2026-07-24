@@ -7,6 +7,7 @@ from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.align import Align
 
 console = Console()
 
@@ -17,20 +18,6 @@ class Game:
         self.players = []
         self.pickup = Deck()
         self.in_play = [self.pickup.draw()]
-
-    # for tests to work, it was asking for name first when running the game
-    # so seperated this to put it before the name request
-    def show_logo(self):
-        console.print("""
-                [bold red]██╗   ██╗███╗   ██╗ ██████╗[/]
-                [bold yellow]██║   ██║████╗  ██║██╔═══██╗[/]
-                [bold green]██║   ██║██╔██╗ ██║██║   ██║[/]
-                [bold blue]██║   ██║██║╚██╗██║██║   ██║[/]
-                [bold red]╚██████╔╝██║ ╚████║╚██████╔╝[/]
-                [bold yellow]╚═════╝ ╚═╝  ╚═══╝ ╚═════╝[/]
-                """)
-
-        time.sleep(1.5)
 
     def turn(self):
         self.render()
@@ -47,7 +34,7 @@ class Game:
 
             if player.is_computer:
                 console.print("\nComputer is thinking...", style="italic yellow")
-                time.sleep(1)
+                time.sleep(1.5)
 
                 # store card by comp
                 played_card = player.computer_play_card(self.in_play, self.pickup)
@@ -95,6 +82,30 @@ class Game:
                 player.turn = False
                 next_player.turn = True
 
+            if played_card is not None and played_card.value == "Skip":
+                console.print(
+                    f"{next_player.name} misses a turn!",
+                    style="bold yellow",
+                )
+                time.sleep(1.5)
+                player.turn = True
+                next_player.turn = False
+            else:
+                player.turn = False
+                next_player.turn = True
+
+            if played_card is not None and played_card.value == "Reverse":
+                console.print(
+                    f"Turn order reversed. {player.name}'s turn!",
+                    style="bold yellow",
+                )
+                time.sleep(1.5)
+                player.turn = True
+                next_player.turn = False
+            else:
+                player.turn = False
+                next_player.turn = True
+
             if len(player.player_hand) == 1:
                 console.print("UNO!")
                 time.sleep(1.5)
@@ -130,9 +141,10 @@ class Game:
 
         self.render()
 
-        winner = next(player for player in self.players if player.is_winner)
-
-        console.print(f"\n🏆 {winner.name} wins!", style="bold green")
+        if (self.players[0].is_winner == True):
+            self.show_winner_screen()
+        elif(self.players[1].is_winner == True):
+             self.show_loser_screen()
 
         while True:
             play_again = console.input("Play Again? Y/N: ").upper()
@@ -210,18 +222,6 @@ class Game:
         winner.turn = True
         return winner
 
-        card = self.in_play[-1]
-
-        print("Top card:\n")
-
-        print("+---------+")
-        print(f"| {card.colour:<7} |")
-        print("|         |")
-        print(f"| {card.value:^7} |")
-        print("|         |")
-        print(f"| {card.colour:<7} |")
-        print("+---------+")
-
     def render_game(self):
 
         computer_table = Table.grid()
@@ -233,7 +233,7 @@ class Game:
         for card in hidden_cards:
             row.append(card)
 
-            if len(row) == 6:
+            if len(row) == 9:
                 computer_table.add_row(*row)
                 row = []
 
@@ -271,11 +271,22 @@ class Game:
         if card.value == "Draw Four":
             value = "+4"
 
+        if card.value == "Skip":
+            value = "⊘"
+
+        if card.value == "Reverse":
+            value = "↻"
+
         style = color_styles.get(color, "white")
 
-        card_text = Text(f"\n{value}\n", justify="center", style=f"bold {style}")
+        card_text = Text(value, justify="center", style=f"bold {style}")
 
-        return Panel(card_text, width=8, height=5, border_style=style)
+        return Panel(
+            Align.center(card_text, vertical="middle"),
+            width=8,
+            height=5,
+            border_style=style
+        )
 
     def hidden_card(self):
 
@@ -298,7 +309,7 @@ class Game:
 
             row.append(labelled_card)
 
-            if len(row) == 6:
+            if len(row) == 9:
                 table.add_row(*row)
                 row = []
 
@@ -339,33 +350,66 @@ class Game:
 
         return Panel(table, title="Table", border_style="cyan")
 
+    def show_logo(self):
+
+        console.print("""
+                [bold red]██╗   ██╗███╗   ██╗ ██████╗[/]
+                [bold yellow]██║   ██║████╗  ██║██╔═══██╗[/]
+                [bold green]██║   ██║██╔██╗ ██║██║   ██║[/]
+                [bold blue]██║   ██║██║╚██╗██║██║   ██║[/]
+                [bold red]╚██████╔╝██║ ╚████║╚██████╔╝[/]
+                [bold yellow]╚═════╝ ╚═╝  ╚═══╝ ╚═════╝[/]
+                """)
+
+        time.sleep(1.5)
+
+    def show_winner_screen(self):
         console.clear()
+        console.bell()
+        winner_text = r"""
+        [bold gold1]
+        ██╗    ██╗██╗███╗   ██╗███╗   ██╗███████╗██████╗ 
+        ██║    ██║██║████╗  ██║████╗  ██║██╔════╝██╔══██╗
+        ██║ █╗ ██║██║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝
+        ██║███╗██║██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗
+        ╚███╔███╔╝██║██║ ╚████║██║ ╚████║███████╗██║  ██║
+        ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
+        [/]
+        """
+        trophy = r"""
+                      [gold3]██[/]                  [gold3]██[/]
+                      [gold3]███[/]                [gold3]███[/]
+                      [gold1]█████[/]            [gold1]█████[/]
+                      [gold1]███████[/]        [gold1]███████[/]
+                      [gold1]██████████████████████[/]
+                      [yellow]██████████████████████[/]
+                      [yellow]██████████████████████[/]
+                       [gold1]████████████████████[/]
+                        [gold1]██████████████████[/]
+                         [gold3]██████████████[/]
+                            [gold3]████████[/]
+                            [gold3]████████[/]
+                            [gold3]████████[/]
+                            [gold3]████████████[/]
+                        [yellow]██████████████████[/]
+                    [bright_yellow]████████████████████████[/]
+        """
+        console.print(winner_text)
+        console.print(trophy)
+        time.sleep(1.5)
 
-        computer_table = Table.grid()
-
-        hidden_cards = [self.hidden_card() for _ in self.players[1].player_hand]
-
-        row = []
-
-        for card in hidden_cards:
-
-            row.append(card)
-
-            if len(row) == 6:
-                computer_table.add_row(*row)
-                row = []
-
-        if row:
-            computer_table.add_row(*row)
-
-        console.print(Panel(computer_table, title="Computer Hand", border_style="red"))
-
-        console.print(self.center_area())
-
-        console.print(
-            Panel(
-                self.draw_hand(self.players[0].player_hand),
-                title="Your Hand",
-                border_style="green",
-            )
-        )
+    def show_loser_screen(self):
+        console.clear()
+        console.bell()
+        loser_text = r"""
+        [bold red]
+        ██████╗ ███████╗███████╗███████╗ █████╗ ████████╗
+        ██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗╚══██╔══╝
+        ██║  ██║█████╗  █████╗  █████╗  ███████║   ██║   
+        ██║  ██║██╔══╝  ██╔══╝  ██╔══╝  ██╔══██║   ██║   
+        ██████╔╝███████╗██║     ███████╗██║  ██║   ██║   
+        ╚═════╝ ╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   
+        [/]
+        """
+        console.print(loser_text)
+        time.sleep(1.5)

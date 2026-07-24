@@ -22,6 +22,12 @@ class Deck:
             for i in range(1):
                 self.deck.append(Card("Draw Four", "Black"))
 
+            for i in range(2):
+                self.deck.append(Card("Skip", colour))
+                
+            for i in range(2):
+                self.deck.append(Card("Reverse", colour))
+
 
     def draw(self):
         if self.deck:
